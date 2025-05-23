@@ -1,0 +1,274 @@
+// Session management
+function validateSession() {
+    try {
+        const currentUser = JSON.parse(localStorage.getItem('dominon_current_user'));
+        const sessionActive = localStorage.getItem('dominon_session_active');
+        
+        if (!currentUser?.isAuthenticated || sessionActive !== 'true') {
+            throw new Error('Invalid session');
+        }
+        
+        // Update last active timestamp
+        currentUser.lastActive = Date.now();
+        localStorage.setItem('dominon_current_user', JSON.stringify(currentUser));
+        
+        return currentUser;
+    } catch (error) {
+        console.error('Session validation failed:', error);
+        // Clear invalid session
+        localStorage.removeItem('dominon_current_user');
+        localStorage.removeItem('dominon_session_active');
+        window.location.replace('index.html');
+        return null;
+    }
+}
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    const currentUser = validateSession();
+    if (!currentUser) return;
+
+    // Initialize message and friend managers
+    window.messageManager = new MessageManager();
+    window.friendManager = new FriendManager();
+
+    // Update UI with user information
+    document.getElementById('username').textContent = currentUser.username;
+
+    // Initialize the chat interface
+    initializeChat();
+
+    // Start status updates
+    friendManager.startStatusUpdates();
+
+    // Prevent back navigation
+    history.pushState(null, null, document.URL);
+    window.addEventListener('popstate', () => {
+        history.pushState(null, null, document.URL);
+    });
+
+    // Cleanup on unload
+    window.addEventListener('beforeunload', () => {
+        friendManager.stopStatusUpdates();
+        messageManager.stopMessageUpdates();
+    });
+
+    // Periodically validate session
+    setInterval(validateSession, 30000); // Check every 30 seconds
+});
+
+function initializeChat() {
+    // Initialize navigation
+    initializeNavigation();
+    
+    // Initialize friend tabs
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const tabType = button.textContent.toLowerCase();
+            friendManager.updateFriendsUI(tabType);
+        });
+    });
+
+    // Add Friend button functionality
+    const addFriendBtn = document.querySelector('.add-friend-btn');
+    addFriendBtn.addEventListener('click', () => {
+        const username = prompt('Enter username to add friend:');
+        if (username) {
+            if (friendManager.sendFriendRequest(username)) {
+                alert('Friend request sent!');
+            } else {
+                alert('Could not send friend request. User may not exist or is already a friend.');
+            }
+        }
+    });
+
+    // Search functionality
+    const searchInput = document.querySelector('.search-bar input');
+    searchInput.addEventListener('input', (e) => {
+        // TODO: Implement search functionality
+        console.log('Searching for:', e.target.value);
+    });
+
+    // Settings button functionality
+    const settingsBtn = document.querySelector('.settings-btn');
+    settingsBtn.addEventListener('click', () => handleLogout());
+
+    // Initialize chat input
+    initializeChatInput();
+
+    // Initialize friend list
+    friendManager.updateFriendsUI('online');
+}
+
+function initializeChatInput() {
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendMessage');
+    let typingTimeout;
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', () => {
+        // Reset height to auto to correctly calculate scroll height
+        messageInput.style.height = 'auto';
+        messageInput.style.height = messageInput.scrollHeight + 'px';
+        
+        // Enable/disable send button based on content
+        sendButton.disabled = !messageInput.value.trim();
+
+        // Handle typing indicator
+        if (messageManager.activeChat) {
+            messageManager.setTyping(true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                messageManager.setTyping(false);
+            }, 1000);
+        }
+    });
+
+    // Handle message sending
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const content = messageInput.value.trim();
+        if (!content || !messageManager.activeChat) return;
+
+        messageManager.sendMessage(content);
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        sendButton.disabled = true;
+    }
+}
+
+function initializeDMList() {
+    const dmList = document.getElementById('dmList');
+    const friendsList = friendManager.getFriendList('online');
+    
+    dmList.innerHTML = ''; // Clear existing items
+    
+    if (friendsList.length === 0) {
+        dmList.innerHTML = '<div class="no-dms">No conversations yet</div>';
+        return;
+    }
+
+    friendsList.forEach(friend => {
+        const dmElement = document.createElement('div');
+        dmElement.className = 'dm-item';
+        dmElement.innerHTML = `
+            <img src="assets/default-avatar.png" alt="${friend.username}">
+            <span>${friend.username}</span>
+            <div class="status-indicator ${friend.status}"></div>
+        `;
+        
+        dmElement.addEventListener('click', () => openChat(friend.username));
+        dmList.appendChild(dmElement);
+    });
+}
+
+function openChat(username) {
+    // Show chat section and hide friends section
+    document.querySelector('.friends-section').classList.add('hidden');
+    const chatSection = document.querySelector('.chat-section');
+    chatSection.classList.remove('hidden');
+
+    // Update chat header
+    document.getElementById('chatUsername').textContent = username;
+    const user = friendManager.getFriendByUsername(username);
+    document.getElementById('chatUserStatus').textContent = user ? user.status : 'Offline';
+
+    // Initialize chat
+    messageManager.initializeChat(username);
+
+    // Update UI to show selected chat in DM list
+    document.querySelectorAll('.dm-item').forEach(item => {
+        item.classList.remove('selected');
+        if (item.querySelector('span').textContent === username) {
+            item.classList.add('selected');
+        }
+    });
+
+    // Make sure message input is ready
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.focus();
+    }
+}
+
+// Handle navigation item clicks
+function initializeNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Handle section visibility
+            const type = item.querySelector('span').textContent.toLowerCase();
+            handleSectionVisibility(type);
+        });
+    });
+}
+
+function handleSectionVisibility(type) {
+    const friendsSection = document.querySelector('.friends-section');
+    const chatSection = document.querySelector('.chat-section');
+    const dmList = document.querySelector('.direct-messages');
+    
+    switch(type) {
+        case 'friends':
+            friendsSection.classList.remove('hidden');
+            chatSection.classList.add('hidden');
+            friendManager.updateFriendsUI('online');
+            dmList.style.display = 'none';
+            break;
+        case 'messages':
+            friendsSection.classList.add('hidden');
+            chatSection.classList.add('hidden');
+            dmList.style.display = 'flex';
+            initializeDMList();
+            break;
+        case 'explore':
+            friendsSection.classList.add('hidden');
+            chatSection.classList.add('hidden');
+            dmList.style.display = 'none';
+            break;
+    }
+}
+
+// Add DM button handler
+function initializeDMControls() {
+    const addDMButton = document.querySelector('.dm-add');
+    if (addDMButton) {
+        addDMButton.addEventListener('click', () => {
+            const username = prompt('Enter username to start a conversation:');
+            if (username) {
+                const friend = friendManager.getFriendByUsername(username);
+                if (friend) {
+                    openChat(username);
+                } else {
+                    alert('User not found in your friends list.');
+                }
+            }
+        });
+    }
+}
+
+// Handle logout
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear all session data
+        localStorage.removeItem('dominon_current_user');
+        localStorage.removeItem('dominon_session_active');
+        sessionStorage.clear();
+        
+        // Redirect to login page
+        window.location.replace('index.html');
+    }
+}

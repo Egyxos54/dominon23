@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominon - Welcome</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script>
+        function checkSession() {
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('dominon_current_user'));
+                const sessionActive = localStorage.getItem('dominon_session_active');
+                if (currentUser?.isAuthenticated && sessionActive === 'true') {
+                    window.location.replace('chat.html');
+                }
+            } catch (error) {
+                localStorage.removeItem('dominon_current_user');
+                localStorage.removeItem('dominon_session_active');
+            }
+        }
+        checkSession();
+    </script>
+</head>
+<body class="space-theme">
+    <script>
+        // Check if user is already logged in
+        const currentUser = JSON.parse(localStorage.getItem('dominon_current_user'));
+        const sessionActive = localStorage.getItem('dominon_session_active');
+        if (currentUser && currentUser.isAuthenticated && sessionActive) {
+            window.location.replace('chat.html');
+        }
+    </script>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>Welcome to Dominon</h1>
+                <p class="subtitle">Your Space Communication Hub</p>
+            </div>
+            <div class="form-container login-form" id="loginForm">
+                <h2>Login</h2>
+                <form onsubmit="return handleLogin(event)">
+                    <div class="form-group">
+                        <input type="email" id="loginEmail" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="loginPassword" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                </form>
+                <p class="switch-form">Don't have an account? <a href="#" onclick="toggleForms()">Register</a></p>
+            </div>
+            <div class="form-container register-form hidden" id="registerForm">
+                <h2>Create Account</h2>
+                <form onsubmit="return handleRegister(event)">
+                    <div class="form-group">
+                        <input type="text" id="registerUsername" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="registerEmail" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="registerPassword" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Register</button>
+                </form>
+                <p class="switch-form">Already have an account? <a href="#" onclick="toggleForms()">Login</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="space-background">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+    </div>
+    <script src="js/auth.js"></script>
+</body>
+</html>

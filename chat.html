@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominon - Space Hub</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="space-theme">    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <!-- User Profile -->
+            <div class="user-profile">
+                <div class="profile-wrapper">
+                    <img src="assets/default-avatar.png" alt="Profile" id="userAvatar">
+                    <span class="status-dot"></span>
+                </div>
+                <div class="user-info">
+                    <span id="username">Egyxos</span>
+                    <span class="status">Online</span>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <div class="nav-list">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-comment"></i>
+                    <span>Messages</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-user-group"></i>
+                    <span>Friends</span>
+                    <span class="badge">1</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-compass"></i>
+                    <span>Explore</span>
+                </a>
+            </div>
+
+            <!-- Direct Messages -->
+            <div class="direct-messages">
+                <div class="dm-header">
+                    <span>Direct Messages</span>
+                    <button class="dm-add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="dm-list" id="dmList">
+                    <div class="dm-item">
+                        <img src="assets/default-avatar.png" alt="Space Explorer #1">
+                        <span>Space Explorer #1</span>
+                    </div>
+                    <div class="dm-item">
+                        <img src="assets/default-avatar.png" alt="Cosmic Voyager">
+                        <span>Cosmic Voyager</span>
+                    </div>
+                    <div class="dm-item">
+                        <img src="assets/default-avatar.png" alt="Star Navigator">
+                        <span>Star Navigator</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Controls -->
+            <div class="user-controls">
+                <button class="settings-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">            <!-- Friends Section -->
+            <div class="friends-section">
+                <div class="section-header">
+                    <div class="header-tabs">
+                        <button class="tab-btn active">Online</button>
+                        <button class="tab-btn">All</button>
+                        <button class="tab-btn">Pending</button>
+                        <button class="tab-btn">Blocked</button>
+                    </div>
+                    <button class="add-friend-btn">
+                        <i class="fas fa-user-plus"></i>
+                        Add Friend
+                    </button>
+                </div>
+
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search or start a conversation...">
+                </div>
+
+                <div class="friends-list" id="friendsList">
+                    <!-- Friends list will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="chat-section hidden">
+                <div class="chat-header">
+                    <div class="chat-user-info">
+                        <img src="assets/default-avatar.png" alt="Chat User" id="chatUserAvatar">
+                        <div class="user-details">
+                            <span id="chatUsername"></span>
+                            <span id="chatUserStatus" class="status"></span>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="action-btn">
+                            <i class="fas fa-phone"></i>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-video"></i>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-content" id="chatContent">
+                    <!-- Messages will be populated by JavaScript -->
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator"></div>
+
+                <div class="chat-input">
+                    <button class="attach-btn">
+                        <i class="fas fa-plus-circle"></i>
+                    </button>
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+                        <div class="input-actions">
+                            <button class="emoji-btn">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button class="gif-btn">
+                                <i class="fas fa-image"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="send-btn" id="sendMessage" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Now Section -->
+            <aside class="active-now">
+                <div class="user-profile-section" id="userProfileSection">
+                    <div class="profile-header">
+                        <img src="assets/default-avatar.png" alt="Profile" id="profileAvatar">
+                        <h2 id="profileUsername">Username</h2>
+                        <span id="profileStatus" class="status">Online</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="info-section">
+                            <h3>About</h3>
+                            <p id="profileAbout">Loading...</p>
+                        </div>
+                        <div class="info-section">
+                            <h3>Member Since</h3>
+                            <p id="profileJoinDate">Loading...</p>
+                        </div>
+                        <div class="info-section">
+                            <h3>Mutual Friends</h3>
+                            <div id="profileMutualFriends" class="mutual-friends-list">
+                                Loading...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn message-btn">
+                            <i class="fas fa-comment"></i>
+                            Message
+                        </button>
+                        <button class="action-btn more-btn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <h3>Active Now</h3>
+                <div class="active-users" id="activeUsers">
+                    <div class="no-activity">
+                        <i class="fas fa-moon"></i>
+                        <p>It's quiet for now...</p>
+                        <span>When friends start an activity—like playing a game or hanging out on voice—we'll show it here!</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script src="js/messages.js"></script>
+    <script src="js/friends.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>
